@@ -7,7 +7,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_community.utilities import SQLDatabase
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone.vectorstores import PineconeVectorStore
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone
 
 # === LOAD ENV VARIABLES ===
 load_dotenv()
