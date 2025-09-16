@@ -160,33 +160,15 @@ export const MessageList = ({
       case MESSAGE_TYPES.SQL_QUERY:
       case MESSAGE_TYPES.QUERY_RESULT:
         return (
-          <div key={message.id || index} className="flex gap-3">
-            <Avatar className="h-8 w-8 mt-1">
-              <AvatarFallback className="bg-muted">
-                <Bot className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-muted-foreground">SQL Agent</span>
-                <span className="text-xs text-muted-foreground">
-                  {formatTimestamp(message.timestamp)}
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  Query Result
-                </Badge>
-              </div>
-              
-              <SQLResult
-                sql={message.metadata?.sql}
-                results={message.metadata?.results}
-                executionTime={message.metadata?.executionTime}
-                explanation={message.metadata?.explanation}
-                error={message.metadata?.error}
-              />
-            </div>
+          <div key={message.id || index} className="flex-1">
+            <SQLResult
+              sql={message.metadata?.sql}
+              results={message.metadata?.results}
+              executionTime={message.metadata?.executionTime}
+              explanation={message.metadata?.explanation}
+              error={message.metadata?.error}
+              timestamp={message.timestamp}
+            />
           </div>
         );
 

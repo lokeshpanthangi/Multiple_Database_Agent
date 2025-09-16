@@ -15,9 +15,11 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Database
+  Database,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-import { copyToClipboard, formatExecutionTime, exportUtils } from '../../utils/index.js';
+import { copyToClipboard, formatExecutionTime, formatTimestamp, exportUtils } from '../../utils/index.js';
 
 export const SQLResult = ({ 
   sql, 
@@ -25,11 +27,13 @@ export const SQLResult = ({
   executionTime, 
   explanation,
   error,
+  timestamp,
   className = ""
 }) => {
   const [showSql, setShowSql] = useState(true);
   const [copiedSql, setCopiedSql] = useState(false);
   const [activeTab, setActiveTab] = useState('table');
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleCopySql = async () => {
     const success = await copyToClipboard(sql);
@@ -228,96 +232,138 @@ export const SQLResult = ({
     );
   }
 
+  // Chat response format with dropdown
+  const resultCount = results ? results.length : 0;
+  const hasResults = resultCount > 0;
+  
   return (
-    <Card className={className}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Query Results
-            </CardTitle>
-            {explanation && (
-              <CardDescription className="mt-2">
-                {explanation}
-              </CardDescription>
-            )}
-          </div>
-          <Badge variant="secondary" className="flex items-center gap-1">
+    <div className={`space-y-3 ${className}`}>
+      {/* Chat Response Message */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Database className="h-4 w-4 text-blue-600" />
+          <span className="text-sm font-medium">Query executed successfully</span>
+          <Badge variant="secondary" className="flex items-center gap-1 ml-auto">
             <CheckCircle2 className="h-3 w-3" />
             Success
           </Badge>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* SQL Query Section */}
-        {sql && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium flex items-center gap-2">
-                <Code className="h-4 w-4" />
-                Generated SQL
-              </h4>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowSql(!showSql)}
-                  className="h-8"
-                >
-                  {showSql ? (
-                    <EyeOff className="h-3 w-3 mr-1" />
-                  ) : (
-                    <Eye className="h-3 w-3 mr-1" />
-                  )}
-                  {showSql ? 'Hide' : 'Show'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopySql}
-                  className="h-8"
-                >
-                  {copiedSql ? (
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                  ) : (
-                    <Copy className="h-3 w-3 mr-1" />
-                  )}
-                  {copiedSql ? 'Copied!' : 'Copy'}
-                </Button>
+        
+        {/* Dropdown Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-0 h-auto font-normal"
+        >
+          {isExpanded ? (
+            <>
+              <ChevronUp className="h-4 w-4 mr-1" />
+              Hide query details
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4 mr-1" />
+              Show query details
+            </>
+          )}
+        </Button>
+      </div>
+      
+      {/* Expandable Results Section */}
+      {isExpanded && (
+        <Card>
+          <CardContent className="space-y-4">
+            {/* Query Information */}
+            <div className="flex items-center justify-between text-sm text-muted-foreground border-b pb-3">
+              <div className="flex items-center gap-4">
+                {timestamp && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatTimestamp(timestamp)}
+                  </span>
+                )}
+                {executionTime && (
+                  <span>
+                    {hasResults 
+                      ? `Found ${resultCount} result${resultCount !== 1 ? 's' : ''} in ${formatExecutionTime(executionTime)}`
+                      : `Query completed in ${formatExecutionTime(executionTime)} with no results`
+                    }
+                  </span>
+                )}
               </div>
             </div>
             
-            {showSql && (
-              <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
-                <code>{sql}</code>
-              </pre>
+            {/* SQL Query Section */}
+            {sql && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <Code className="h-4 w-4" />
+                    Generated SQL
+                  </h4>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSql(!showSql)}
+                      className="h-8"
+                    >
+                      {showSql ? (
+                        <EyeOff className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Eye className="h-3 w-3 mr-1" />
+                      )}
+                      {showSql ? 'Hide' : 'Show'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopySql}
+                      className="h-8"
+                    >
+                      {copiedSql ? (
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Copy className="h-3 w-3 mr-1" />
+                      )}
+                      {copiedSql ? 'Copied!' : 'Copy'}
+                    </Button>
+                  </div>
+                </div>
+                
+                {showSql && (
+                  <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto">
+                    <code>{sql}</code>
+                  </pre>
+                )}
+              </div>
             )}
-          </div>
-        )}
 
-        {/* Results Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="table" className="flex items-center gap-2">
-              <Table className="h-4 w-4" />
-              Table View
-            </TabsTrigger>
-            <TabsTrigger value="chart" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Chart View
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="table" className="mt-4">
-            {renderTable()}
-          </TabsContent>
-          
-          <TabsContent value="chart" className="mt-4">
-            {renderChart()}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            {/* Results Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="table" className="flex items-center gap-2">
+                  <Table className="h-4 w-4" />
+                  Table View
+                </TabsTrigger>
+                <TabsTrigger value="chart" className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Chart View
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="table" className="mt-4">
+                {renderTable()}
+              </TabsContent>
+              
+              <TabsContent value="chart" className="mt-4">
+                {renderChart()}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };

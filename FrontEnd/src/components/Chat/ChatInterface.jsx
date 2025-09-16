@@ -33,17 +33,11 @@ export const ChatInterface = ({ className = "" }) => {
       const response = await api.query(activeDatabaseId, message);
 
       if (response.success) {
-        // Add agent response with explanation
-        if (response.explanation) {
-          addMessage(MESSAGE_TYPES.AGENT, response.explanation);
-        }
-
         // Add query result
         addMessage(MESSAGE_TYPES.QUERY_RESULT, 'Query executed successfully', {
           sql: response.sql,
           results: response.results,
-          executionTime: response.executionTime,
-          explanation: response.explanation
+          executionTime: response.executionTime
         });
       } else {
         throw new Error(response.message || 'Query failed');
@@ -186,7 +180,7 @@ export const ChatInterface = ({ className = "" }) => {
       />
 
       {/* Input Area */}
-      <div className="border-t bg-background/95 backdrop-blur-sm p-4">
+      <div className="bg-background/95 backdrop-blur-sm p-4">
         <MessageInput
           onSendMessage={handleSendMessage}
           isLoading={isLoading}

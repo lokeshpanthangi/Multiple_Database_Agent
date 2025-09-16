@@ -9,6 +9,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { ThemeToggle } from './components/ui/theme-toggle.jsx';
 
 // Import components
 import { SetupPage } from './components/Setup/SetupPage.jsx';
@@ -131,7 +132,7 @@ const AppContent = () => {
     if (!isMobile) return null;
 
     return (
-      <div className="md:hidden bg-background border-b px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden bg-background border-b px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -150,6 +151,7 @@ const AppContent = () => {
         </div>
         
         <div className="flex items-center gap-1">
+          <ThemeToggle size="sm" />
           <Button
             variant="ghost"
             size="sm"
@@ -200,7 +202,7 @@ const AppContent = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Desktop Navigation */}
           {!isMobile && currentView !== 'chat' && (
-            <div className="border-b bg-background/95 backdrop-blur-sm px-6 py-3">
+            <div className="border-b bg-background/95 backdrop-blur-sm px-6 py-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Button
@@ -237,6 +239,9 @@ const AppContent = () => {
                       Settings
                     </Button>
                   </div>
+                </div>
+                <div className="flex items-center">
+                  <ThemeToggle size="sm" />
                 </div>
               </div>
             </div>
