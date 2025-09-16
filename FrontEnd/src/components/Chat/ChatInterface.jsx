@@ -13,7 +13,7 @@ import {
 import { MessageList } from './MessageList.jsx';
 import { MessageInput } from './MessageInput.jsx';
 import { useChat, useDatabase } from '../../hooks/useAppState.jsx';
-import { MESSAGE_TYPES } from '../../types/index.js';
+import { MESSAGE_TYPES, DATABASE_TYPES } from '../../types/index.js';
 import { api } from '../../services/api.js';
 
 export const ChatInterface = ({ className = "" }) => {
@@ -29,18 +29,37 @@ export const ChatInterface = ({ className = "" }) => {
     setIsLoading(true);
 
     try {
-      // Call API to process the query
-      const response = await api.query(activeDatabaseId, message);
-
-      if (response.success) {
-        // Add query result
-        addMessage(MESSAGE_TYPES.QUERY_RESULT, 'Query executed successfully', {
-          sql: response.sql,
+      let response;
+      
+      if (activeDatabase.type === DATABASE_TYPES.MONGODB) {
+        // Use MongoDB-specific API
+        const connectionString = activeDatabase.credentials.connectionString;
+        const databaseName = activeDatabase.credentials.database || 'test';
+        const nickname = activeDatabase.nickname || 'MongoDB Connection';
+        
+        response = await api.mongo.query(nickname, connectionString, databaseName, message);
+        
+        // Add query result for MongoDB
+        addMessage(MESSAGE_TYPES.QUERY_RESULT, response.response, {
+          aggregationPipeline: response.query_workflow?.aggregation_pipeline,
+          collections: response.query_workflow?.collection_names,
           results: response.results,
-          executionTime: response.executionTime
+          mongoQuery: true
         });
       } else {
-        throw new Error(response.message || 'Query failed');
+        // Use generic API for other databases
+        response = await api.query?.(activeDatabaseId, message);
+
+        if (response?.success) {
+          // Add query result
+          addMessage(MESSAGE_TYPES.QUERY_RESULT, 'Query executed successfully', {
+            sql: response.sql,
+            results: response.results,
+            executionTime: response.executionTime
+          });
+        } else {
+          throw new Error(response?.message || 'Query failed');
+        }
       }
     } catch (error) {
       console.error('Query failed:', error);

@@ -1,6 +1,6 @@
 // API service for communicating with the backend
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Generic API request handler
 const apiRequest = async (endpoint, options = {}) => {
@@ -228,13 +228,53 @@ export const mockApi = {
   },
 };
 
+// MongoDB specific API
+export const mongoApi = {
+  // Test and establish MongoDB connection
+  connect: async (connectionNickname, dbUrl, dbName) => {
+    return apiRequest('/mongo_pipeline/client', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        connection_nickname: connectionNickname,
+        db_url: dbUrl,
+        db_name: dbName,
+      }),
+    });
+  },
+
+  // Execute MongoDB query
+  query: async (connectionNickname, dbUrl, dbName, question) => {
+    return apiRequest('/mongo/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        connection_nickname: connectionNickname,
+        db_url: dbUrl,
+        db_name: dbName,
+        question: question,
+      }),
+    });
+  },
+};
+
 // Environment-based API selection
 const isDevelopment = import.meta.env.DEV;
 const useMockApi = isDevelopment && !import.meta.env.VITE_API_URL;
 
 export const api = useMockApi ? mockApi : {
+  // Direct API functions for backward compatibility
+  connect: databaseApi.connect,
+  query: queryApi.executeQuery,
+  
+  // Structured API
   database: databaseApi,
   query: queryApi,
   chat: chatApi,
   queryHistory: queryHistoryApi,
+  mongo: mongoApi,
 };

@@ -162,12 +162,16 @@ export const MessageList = ({
         return (
           <div key={message.id || index} className="flex-1">
             <SQLResult
+              responseContent={message.content}
               sql={message.metadata?.sql}
               results={message.metadata?.results}
               executionTime={message.metadata?.executionTime}
               explanation={message.metadata?.explanation}
               error={message.metadata?.error}
               timestamp={message.timestamp}
+              aggregationPipeline={message.metadata?.aggregationPipeline}
+              collections={message.metadata?.collections}
+              mongoQuery={message.metadata?.mongoQuery}
             />
           </div>
         );
